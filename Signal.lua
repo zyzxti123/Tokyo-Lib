@@ -1,3 +1,49 @@
+--[[
+	Lua-side duplication of the [API of events on Roblox objects](https://create.roblox.com/docs/reference/engine/datatypes/RBXScriptSignal).
+
+	Signals are needed for to ensure that for local events objects are passed by
+	reference rather than by value where possible, as the BindableEvent objects
+	always pass signal arguments by value, meaning tables will be deep copied.
+	Roblox's deep copy method parses to a non-lua table compatable format.
+
+	This class is designed to work both in deferred mode and in regular mode.
+	It follows whatever mode is set.
+
+	```lua
+	local signal = Signal.new()
+
+	local arg = {}
+
+	signal:Connect(function(value)
+		assert(arg == value, "Tables are preserved when firing a Signal")
+	end)
+
+	signal:Fire(arg)
+	```
+
+	:::info
+	Why this over a direct [BindableEvent]? Well, in this case, the signal
+	prevents Roblox from trying to serialize and desialize each table reference
+	fired through the BindableEvent.
+	:::
+
+	@class Signal
+]]--
+
+local USE_GOOD_SIGNAL_ONLY = true
+
+--[[
+if USE_GOOD_SIGNAL_ONLY then
+	local require = require(script.Parent.loader).load(script)
+
+	return require("GoodSignal")
+end
+]]--
+
+local HttpService = game:GetService("HttpService")
+
+local ENABLE_TRACEBACK = false
+
 local Signal = {}
 Signal.__index = Signal
 Signal.ClassName = "Signal"
